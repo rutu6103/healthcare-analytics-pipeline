@@ -365,8 +365,10 @@ connection to point at your local `healthcare_analytics` database and the
 
 ## Data quality
 
-`sql/data_quality_checks.sql` is designed so that **zero rows returned means the
-check passed**. It covers:
+`sql/data_quality_checks.sql` contains two kinds of queries. The exception
+queries pass when they return zero rows — a non-empty result is the list of
+offending rows. The summary queries return row counts and missing-value totals
+for review. It covers:
 
 - Duplicate primary identifiers.
 - Encounters or conditions without a matching patient.
