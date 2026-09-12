@@ -128,7 +128,7 @@ It does **not** measure population prevalence, severity, or treatment outcome.
 ![Data quality](screenshots/data_quality.png)
 
 Load freshness and row counts pulled from `healthcare.etl_log`. This page tracks
-*when* data arrived and *how much* arrived — it is the operationally visible
+*when* data arrived and *how much* arrived - it is the operationally visible
 side of the pipeline.
 
 ### City Population Insights (drillthrough)
@@ -180,14 +180,14 @@ recent window:
 
 | Band | Patients | Total encounters | Avg per patient |
 |---|---:|---:|---:|
-| 1 encounter | 0 | 0 | — |
+| 1 encounter | 0 | 0 | - |
 | 2–5 encounters | 3 | 12 | 4.0 |
 | 6–20 encounters | 276 | 3,919 | 14.2 |
 | 21+ encounters | 342 | 15,880 | 46.4 |
 
 **Interpretation:** 342 of 621 patients (55%) fall in the 21+ band and account
 for roughly 80% of recorded encounters. This is the classic high-utilization
-tail that operations teams monitor. It is a descriptive finding only — it says
+tail that operations teams monitor. It is a descriptive finding only - it says
 nothing about why these patients return, or whether the returns are clinically
 appropriate.
 
@@ -333,11 +333,11 @@ python src/run_pipeline.py
 
 This runs, in order:
 
-1. **Extract** — pull Patient, Encounter, and Condition bundles from the public
+1. **Extract** - pull Patient, Encounter, and Condition bundles from the public
    SMART FHIR test server. This may take **5–20 minutes** depending on server
    responsiveness because the pipeline follows every paginated link.
-2. **Transform** — flatten each bundle into a CSV in `data/processed/fhir/`.
-3. **Load** — insert the CSVs into PostgreSQL in the `healthcare` schema.
+2. **Transform** - flatten each bundle into a CSV in `data/processed/fhir/`.
+3. **Load** - insert the CSVs into PostgreSQL in the `healthcare` schema.
 
 ### 6. Build the warehouse
 
@@ -418,6 +418,6 @@ record from a specific KPI. Details are in
 
 ## Author
 
-**Rutuja Kadam** — M.Sc. Statistics | Data and BI Analyst
+**Rutuja Kadam** - M.Sc. Statistics | Data and BI Analyst
 
 SQL · Python · PostgreSQL · Power BI · DAX · ETL · Dimensional Modelling
