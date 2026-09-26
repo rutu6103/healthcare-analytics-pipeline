@@ -1,33 +1,24 @@
 # Healthcare Analytics Pipeline and BI Dashboard
 
-An end-to-end analytics project that retrieves **public synthetic FHIR data**,
-flattens nested clinical records into analysis-ready tables, loads them into a
-PostgreSQL warehouse, validates data quality, and presents operational insights
-through a Power BI report.
+An end-to-end analytics project that retrieves **public synthetic FHIR data**, flattens nested clinical records into analysis-ready tables, loads them into a PostgreSQL warehouse, validates data quality, and presents operational insights through a Power BI report.
 
-This is a portfolio project. The data is synthetic and the results are for
-demonstration only. **Nothing in this repository should be used for clinical
-decision-making.**
+This is a portfolio project. The data is synthetic and the results are for demonstration only. **Nothing in this repository should be used for clinical decision-making.**
 
 ---
 
 ## Business problem
 
-Healthcare operations teams need a consistent view of patient population,
-encounter demand, frequently recorded conditions, and the reliability of the
-underlying data. Answering those questions usually requires stitching together
-several disjoint systems.
+Healthcare operations teams need a consistent view of patient population, encounter demand, frequently recorded conditions, and the reliability of the underlying data. Answering those questions usually requires stitching together several disjoint systems.
 
-This project builds a small, end-to-end pipeline that turns raw FHIR resources
-into an analytics-ready warehouse and an interactive dashboard. It answers
-questions such as:
+This project builds a small, end-to-end pipeline that turns raw FHIR resources into an analytics-ready warehouse and an interactive dashboard. It answers questions such as:
 
 - How is encounter volume changing over time?
 - Which encounter classes account for the most utilization?
 - How concentrated is utilization across patients?
 - Which conditions are recorded most frequently?
-- Are identifiers, relationships, and dates complete enough to trust the
-  results?
+- Are identifiers, relationships, and dates complete enough to trust the results?
+
+This mirrors the reporting challenges hospitals and clinics face when reconciling EHR, scheduling, and billing systems — where patient, encounter, and condition data live in separate systems that rarely agree on identifiers or timestamps.
 
 ---
 
@@ -58,8 +49,7 @@ flowchart TD
 
 ## Data model
 
-The warehouse lives in the `healthcare` schema and follows a small dimensional
-design. Three main objects carry the analytical load.
+The warehouse lives in the `healthcare` schema and follows a small dimensional design. Three main objects carry the analytical load.
 
 | Object | Grain | Purpose |
 |---|---|---|
@@ -69,85 +59,57 @@ design. Three main objects carry the analytical load.
 | `healthcare.etl_log` | One row per load event | Load time and row count per table |
 | `healthcare.vw_patient_summary` | One row per patient | Encounter and condition counts for BI |
 
-**Relationships:** `fact_encounter.patient_id` and `fact_condition.patient_id`
-reference `dim_patient.patient_id`. `fact_condition.encounter_id` references
-`fact_encounter.encounter_id` when the FHIR resource supplies one.
+**Relationships:** `fact_encounter.patient_id` and `fact_condition.patient_id` reference `dim_patient.patient_id`. `fact_condition.encounter_id` references `fact_encounter.encounter_id` when the FHIR resource supplies one.
 
-The model is a **small dimensional schema**, not a full star: `fact_condition`
-references a second fact table, which is a snowflake-style link rather than a
-strict star pattern. This is a deliberate choice so the project can express the
-"condition occurred during an encounter" relationship without adding a bridge
-table.
+The model is a **small dimensional schema**, not a full star: `fact_condition` references a second fact table, which is a snowflake-style link rather than a strict star pattern. This is a deliberate choice so the project can express the "condition occurred during an encounter" relationship without adding a bridge table.
 
 ---
 
 ## Dashboard
 
-The report has five analytical pages and one drillthrough page. Each screenshot
-below reflects the same documented snapshot described under **Results**.
+The report has five analytical pages and one drillthrough page. Each screenshot below reflects the same documented snapshot described under **Results**.
 
 ### Executive Overview
 
 ![Executive overview](screenshots/executive_overview.png)
 
-Population size, total encounters, total conditions, average utilization, repeat-
-patient rate, and encounter growth. Designed as the starting point before
-drilling into a specific view. A high repeat-patient rate indicates that most
-recorded activity comes from returning patients rather than one-time visits.
+Population size, total encounters, total conditions, average utilization, repeat-patient rate, and encounter growth. Designed as the starting point before drilling into a specific view. A high repeat-patient rate indicates that most recorded activity comes from returning patients rather than one-time visits.
 
 ### Patient Population Insights
 
 ![Patient analytics](screenshots/patient_analytics.png)
 
-Who appears in the data and how heavily they use the system. The age-group
-distribution shows a bimodal shape with peaks among working-age adults and the
-75+ group. Comparing the average and median encounters per patient (shown on
-other pages) reveals that a small group of patients accounts for a
-disproportionate share of activity.
+Who appears in the data and how heavily they use the system. The age-group distribution shows a bimodal shape with peaks among working-age adults and the 75+ group. Comparing the average and median encounters per patient (shown on other pages) reveals that a small group of patients accounts for a disproportionate share of activity.
 
 ### Encounter Utilization Analysis
 
 ![Encounter analytics](screenshots/encounter_analytics.png)
 
-When encounters occurred and how they are distributed by class. Ambulatory
-encounters dominate, so changes in the overall trend should be read as changes
-in outpatient activity rather than equal movement across all care settings. The
-volume trend shows a sharp acceleration after 2008 followed by a stable plateau
-from 2011 onward.
+When encounters occurred and how they are distributed by class. Ambulatory encounters dominate (over 92% of encounters), so changes in the overall trend should be read as changes in outpatient activity rather than equal movement across all care settings. The volume trend shows a sharp acceleration after 2008 followed by a stable plateau from 2011 onward.
 
 ### Condition & Disease Analysis
 
 ![Condition analytics](screenshots/condition_analysis.png)
 
-Recorded conditions ranked by frequency, with a clinical-status breakdown.
-A high recorded count means a condition appears frequently in *these records*.
-It does **not** measure population prevalence, severity, or treatment outcome.
+Recorded conditions ranked by frequency, with a clinical-status breakdown. A high recorded count means a condition appears frequently in *these records*. It does **not** measure population prevalence, severity, or treatment outcome.
 
 ### Data Quality Monitoring
 
 ![Data quality](screenshots/data_quality.png)
 
-Load freshness and row counts pulled from `healthcare.etl_log`. This page tracks
-*when* data arrived and *how much* arrived - it is the operationally visible
-side of the pipeline.
+Load freshness and row counts pulled from `healthcare.etl_log`. This page tracks *when* data arrived and *how much* arrived - it is the operationally visible side of the pipeline. This snapshot shows the most recent load on 2026-09-12 with 25,133 rows loaded across 3 tables.
 
 ### City Population Insights (drillthrough)
 
 ![City population insights](screenshots/city_population_insights.png)
 
-Right-click drillthrough from the Patient Population page. Shows city-scoped
-patient counts, encounter counts, condition counts, repeat-patient rate, and a
-ranked condition list. This demonstrates filtered drillthrough in the semantic
-model.
+Right-click drillthrough from the Patient Population page. Shows city-scoped patient counts, encounter counts, condition counts, repeat-patient rate, and a ranked condition list. This demonstrates filtered drillthrough in the semantic model.
 
 ---
 
 ## Results from the documented snapshot
 
-The numbers below come from a single run of the pipeline against the public
-SMART FHIR test server. The server is mutable, so **re-running the pipeline
-later may produce slightly different counts**. Treat these as a documented
-snapshot, not as a fixed property of the source.
+The numbers below come from a single run of the pipeline against the public SMART FHIR test server. The server is mutable, so **re-running the pipeline later may produce slightly different counts**. Treat these as a documented snapshot, not as a fixed property of the source.
 
 ### Warehouse counts (all dates)
 
@@ -157,15 +119,11 @@ snapshot, not as a fixed property of the source.
 | Encounters | 19,811 |
 | Conditions | 4,701 |
 | Average encounters per patient | 31.9 |
-| Repeat-patient count | 621 |
+| Repeat-patient count | 569 |
 
 ### Dashboard-visible counts (2000+ filter)
 
-The Power BI semantic model filters encounters and conditions to records with
-`start_date > 2000-01-01`. The synthetic FHIR server contains a sparse
-historical backfill going back to 1914, and including those scattered early
-records distorts time-based trends. The dashboard therefore reports the
-recent window:
+The Power BI semantic model filters encounters and conditions to records with `start_date > 2000-01-01`. The synthetic FHIR server contains a sparse historical backfill going back to 1914, and including those scattered early records distorts time-based trends. The dashboard therefore reports the recent window:
 
 | Measure | Value |
 |---|---:|
@@ -185,11 +143,7 @@ recent window:
 | 6–20 encounters | 276 | 3,919 | 14.2 |
 | 21+ encounters | 342 | 15,880 | 46.4 |
 
-**Interpretation:** 342 of 621 patients (55%) fall in the 21+ band and account
-for roughly 80% of recorded encounters. This is the classic high-utilization
-tail that operations teams monitor. It is a descriptive finding only - it says
-nothing about why these patients return, or whether the returns are clinically
-appropriate.
+**Interpretation:** Of the 621 patients, 569 (91.63%) have more than one recorded encounter. Within the repeat-patient group, 342 patients (55% of the total) fall in the 21+ utilization band and account for roughly 80% of recorded encounters. This is the classic high-utilization tail that operations teams monitor. It is a descriptive finding only - it says nothing about why these patients return, or whether the returns are clinically appropriate.
 
 ### Top recorded conditions
 
@@ -215,9 +169,7 @@ Every relational-integrity check passed on this snapshot:
 | Missing gender, birth date, or state | 0 |
 | Missing condition name or onset date | 0 |
 
-FHIR treats several of those fields as optional. Reporting zero missing values
-here means the source records happen to be complete in this snapshot, not that
-missing values are always an error.
+FHIR treats several of those fields as optional. Reporting zero missing values here means the source records happen to be complete in this snapshot, not that missing values are always an error.
 
 ---
 
@@ -264,8 +216,7 @@ healthcare-analytics/
 └── requirements.txt
 ```
 
-Generated JSON and CSV files are excluded from Git. See
-[`data/README.md`](data/README.md) for the data policy.
+Generated JSON and CSV files are excluded from Git. See [`data/README.md`](data/README.md) for the data policy.
 
 ---
 
@@ -322,8 +273,7 @@ DB_SCHEMA=healthcare
 FHIR_PAGE_SIZE=200
 ```
 
-The repository does not contain any passwords. `.env` is excluded by
-`.gitignore`.
+The repository does not contain any passwords. `.env` is excluded by `.gitignore`.
 
 ### 5. Run the pipeline
 
@@ -333,9 +283,7 @@ python src/run_pipeline.py
 
 This runs, in order:
 
-1. **Extract** - pull Patient, Encounter, and Condition bundles from the public
-   SMART FHIR test server. This may take **5–20 minutes** depending on server
-   responsiveness because the pipeline follows every paginated link.
+1. **Extract** - pull Patient, Encounter, and Condition bundles from the public SMART FHIR test server. This may take **5–20 minutes** depending on server responsiveness because the pipeline follows every paginated link.
 2. **Transform** - flatten each bundle into a CSV in `data/processed/fhir/`.
 3. **Load** - insert the CSVs into PostgreSQL in the `healthcare` schema.
 
@@ -352,23 +300,17 @@ Run these scripts in PostgreSQL in this order:
 7. `sql/data_quality_checks.sql`
 8. `sql/analytics_queries.sql`
 
-The business meaning of the analytical SQL is explained in
-[`docs/SQL_WALKTHROUGH.md`](docs/SQL_WALKTHROUGH.md).
+The business meaning of the analytical SQL is explained in [`docs/SQL_WALKTHROUGH.md`](docs/SQL_WALKTHROUGH.md).
 
 ### 7. Open the Power BI report
 
-Open `dashboard/Healthcare Analytics.pbix`. If prompted, update the PostgreSQL
-connection to point at your local `healthcare_analytics` database and the
-`healthcare` schema. Then click **Refresh** to reload from your local warehouse.
+Open `dashboard/Healthcare Analytics.pbix`. If prompted, update the PostgreSQL connection to point at your local `healthcare_analytics` database and the `healthcare` schema. Then click **Refresh** to reload from your local warehouse.
 
 ---
 
 ## Data quality
 
-`sql/data_quality_checks.sql` contains two kinds of queries. The exception
-queries pass when they return zero rows — a non-empty result is the list of
-offending rows. The summary queries return row counts and missing-value totals
-for review. It covers:
+`sql/data_quality_checks.sql` contains two kinds of queries. The exception queries pass when they return zero rows — a non-empty result is the list of offending rows. The summary queries return row counts and missing-value totals for review. It covers:
 
 - Duplicate primary identifiers.
 - Encounters or conditions without a matching patient.
@@ -376,31 +318,19 @@ for review. It covers:
 - End dates earlier than start dates.
 - Missing optional demographic and condition fields.
 
-Missing values are reported, not automatically treated as errors. Many FHIR
-fields are optional, and the analyst decides whether a missing field excludes a
-record from a specific KPI. Details are in
-[`docs/SQL_WALKTHROUGH.md`](docs/SQL_WALKTHROUGH.md).
+Missing values are reported, not automatically treated as errors. Many FHIR fields are optional, and the analyst decides whether a missing field excludes a record from a specific KPI. Details are in [`docs/SQL_WALKTHROUGH.md`](docs/SQL_WALKTHROUGH.md).
 
 ---
 
 ## Limitations
 
-- The source is a **public synthetic FHIR test server**, not real patient data.
-  Nothing in this project is clinically valid.
-- The source is **mutable**. Two runs of the same pipeline a week apart may
-  produce different row counts. The numbers in this README describe one
-  documented snapshot.
-- The pipeline performs a **full refresh** on each run. It is not an incremental
-  ETL and it does not version the raw data.
-- The Power BI report filters encounters and conditions to records from 2000
-  onward. The pre-2000 records exist in the warehouse but are excluded from the
-  semantic model because they are sparse historical backfill that distorts time
-  trends.
+- The source is a **public synthetic FHIR test server**, not real patient data. Nothing in this project is clinically valid.
+- The source is **mutable**. Two runs of the same pipeline a week apart may produce different row counts. The numbers in this README describe one documented snapshot.
+- The pipeline performs a **full refresh** on each run. It is not an incremental ETL and it does not version the raw data.
+- The Power BI report filters encounters and conditions to records from 2000 onward. The pre-2000 records exist in the warehouse but are excluded from the semantic model because they are sparse historical backfill that distorts time trends.
 - Condition counts describe **recorded documentation**, not disease prevalence.
-- The 30-day repeat-encounter query is an **operational utilization screen**,
-  not a validated clinical readmission metric.
-- The pipeline is a **local, sequential runner**. It does not include
-  scheduling, orchestration, retries, or cloud deployment.
+- The 30-day repeat-encounter query is an **operational utilization screen**, not a validated clinical readmission metric.
+- The pipeline is a **local, sequential runner**. It does not include scheduling, orchestration, retries, or cloud deployment.
 
 ---
 
@@ -408,18 +338,18 @@ record from a specific KPI. Details are in
 
 - Add automated Python and SQL tests to a CI workflow.
 - Support incremental extraction using FHIR resource `lastUpdated` timestamps.
-- Introduce orchestration and retry monitoring with a scheduler such as
-  Apache Airflow.
-- Version the raw FHIR bundles so results can be reproduced against a fixed
-  snapshot.
-- Add encounter-cost or length-of-stay measures where suitable source fields
-  become available.
+- Introduce orchestration and retry monitoring with a scheduler such as Apache Airflow.
+- Version the raw FHIR bundles so results can be reproduced against a fixed snapshot.
+- Add encounter-cost or length-of-stay measures where suitable source fields become available.
 - Publish the semantic model and report through a governed Power BI workspace.
 
 ---
 
 ## Author
 
-**Rutuja Kadam** - M.Sc. Statistics | Data and BI Analyst
+**Rutuja Kadam** — M.Sc. Statistics | Data Scientist and Analyst
 
-SQL · Python · PostgreSQL · Power BI · DAX · ETL · Dimensional Modelling
+Python · SQL · Machine Learning · Power BI · Statistics
+
+[LinkedIn](https://www.linkedin.com/in/rutuja-kadam-data/) · [GitHub](https://github.com/rutu6103)
+
