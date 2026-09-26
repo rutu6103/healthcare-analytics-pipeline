@@ -347,7 +347,7 @@ Missing values are reported, not automatically treated as errors. Many FHIR fiel
 
 ## Author
 
-**Rutuja Kadam** — M.Sc. Statistics | Data Scientist and Analyst
+**Rutuja Kadam** - M.Sc. Statistics | Data Scientist and Analyst
 
 Python · SQL · Machine Learning · Power BI · Statistics
 
