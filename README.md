@@ -18,7 +18,7 @@ This project builds a small, end-to-end pipeline that turns raw FHIR resources i
 - Which conditions are recorded most frequently?
 - Are identifiers, relationships, and dates complete enough to trust the results?
 
-This mirrors the reporting challenges hospitals and clinics face when reconciling EHR, scheduling, and billing systems — where patient, encounter, and condition data live in separate systems that rarely agree on identifiers or timestamps.
+This mirrors the reporting challenges hospitals and clinics face when reconciling EHR, scheduling, and billing systems - where patient, encounter, and condition data live in separate systems that rarely agree on identifiers or timestamps.
 
 ---
 
@@ -105,6 +105,8 @@ Load freshness and row counts pulled from `healthcare.etl_log`. This page tracks
 
 Right-click drillthrough from the Patient Population page. Shows city-scoped patient counts, encounter counts, condition counts, repeat-patient rate, and a ranked condition list. This demonstrates filtered drillthrough in the semantic model.
 
+A page-by-page guide to what each dashboard view answers is available in [`dashboard/README.md`](dashboard/README.md). All screenshots are indexed in [`screenshots/README.md`](screenshots/README.md).
+
 ---
 
 ## Results from the documented snapshot
@@ -178,6 +180,7 @@ FHIR treats several of those fields as optional. Reporting zero missing values h
 ```text
 healthcare-analytics/
 ├── dashboard/
+│   ├── README.md
 │   └── Healthcare Analytics.pbix
 ├── data/
 │   ├── README.md
@@ -186,6 +189,7 @@ healthcare-analytics/
 ├── docs/
 │   └── SQL_WALKTHROUGH.md
 ├── screenshots/
+│   ├── README.md
 │   ├── city_population_insights.png
 │   ├── condition_analysis.png
 │   ├── data_quality.png
@@ -310,7 +314,7 @@ Open `dashboard/Healthcare Analytics.pbix`. If prompted, update the PostgreSQL c
 
 ## Data quality
 
-`sql/data_quality_checks.sql` contains two kinds of queries. The exception queries pass when they return zero rows — a non-empty result is the list of offending rows. The summary queries return row counts and missing-value totals for review. It covers:
+`sql/data_quality_checks.sql` contains two kinds of queries. The exception queries pass when they return zero rows - a non-empty result is the list of offending rows. The summary queries return row counts and missing-value totals for review. It covers:
 
 - Duplicate primary identifiers.
 - Encounters or conditions without a matching patient.
@@ -352,4 +356,3 @@ Missing values are reported, not automatically treated as errors. Many FHIR fiel
 Python · SQL · Machine Learning · Power BI · Statistics
 
 [LinkedIn](https://www.linkedin.com/in/rutuja-kadam-data/) · [GitHub](https://github.com/rutu6103)
-
